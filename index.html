@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>excel-maria</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,400;0,700;1,100;1,400&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <header>
+        <img id="logo" src="./assets/banco_falabella.png" alt="Logo Banco Falabella">
+    </header>
+
+    <main class="container">
+
+        <section id="balance">
+
+            <h2 class="sr-only">Totales</h2>
+
+            <div class="card">
+                <h3>
+                    <span>
+                        Capital Amortizado
+                    </span>
+                    <!-- <img src="./assets/income.svg" alt="Imagem de entradas"> -->
+                </h3>
+                <p id="incomeDisplay">R$ 0,00</p>
+            </div>
+
+            <div class="card">
+                <h3>
+                    <span>
+                        Interes
+                    </span>
+                    <!-- <img src="./assets/expense.svg" alt="Imagem de saídas"> -->
+                </h3>
+                <p id="expenseDisplay">R$ 0,00</p>
+
+            </div>
+            <div class="card">
+                <h3>
+                    <span>
+                        Cuotas
+                    </span>
+                    <!-- <img src="./assets/total.svg" alt="Imagem de total"> -->
+                </h3>
+                <p id="totalDisplay">R$ 0,00</p>
+            </div>
+
+        </section>
+
+        <section id="transaction">
+            <h2 class="sr-only">Transações</h2>
+
+            <div id="data-input">
+                <a href="#" class="new button" onclick="Modal.openFirstModal()"> + Agregar datos del titular</a>
+                <a href="#" class="new button" onclick="Modal.openSecondModal()"> + Agregar datos de simulación</a>
+            </div>
+
+            <h1 class="rapicashTitle">Retiro Rapicash</h1>
+
+            <h3 class="transactionsTitle">Datos del Titular</h3>
+
+            <div class="datosDelTitular">
+                <div id="primeiraColunaTitular">
+                    <p>Nombre del titular:</p>
+                    <p>Documento identidad:</p>
+                    <p>Número de cuenta:</p>
+                    <p>Tipo de tarjeta:</p>
+                    <p>Número de tarjeta:</p>
+                </div>
+
+                <div id="segundaColunaTitular">
+                    <p>ISOLINA RIVERA GARCIA</p>
+                    <p>02880876</p>
+                    <p>0050291738</p>
+                    <p>VISA PLATINUM</p>
+                    <p>447409******0533</p>
+                    <a class="delete-button"> <img src="./assets/minus.svg" alt="Remover transação"> </a>
+                </div>
+            </div>
+
+            <h3 class="transactionsTitle">Datos de Simulación</h3>
+
+            <div class="datosDeSimulacion">
+                <div id="primeiraColunaSimulacion">
+                    <p>N° Simulación:</p>
+                    <p>Linea disponible Rapicash:</p>
+                    <p>Monto:</p>
+                    <p>N° de cuotas:</p>
+                    <p>Tasa Efectiva Mensual:</p>
+                    <p>Tasa Efectiva Anual:</p>
+                    <p>Total de Intereses:</p>
+                    <p>Moneda:</p>
+                    <p>Vcto CMR:</p>
+                    <p>F. Simulación:</p>
+                    <p>Código de Usuario:</p>
+                </div>
+                <div id="segundaColunaSimulacion">
+                    <p>53932789</p>
+                    <p>32.000,00</p>
+                    <p>12.000,00</p>
+                    <p>12</p>
+                    <p> 3,43%</p>
+                    <p> 49,86%</p>
+                    <p>S/ 2.839,10</p>
+                    <p>Soles</p>
+                    <p>5</p>
+                    <p>28/10/21</p>
+                    <p> 500xxx6</p>
+
+                </div>
+            </div>
+
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>Nº de Cuotas</th>
+                        <th>Fecha de Pago</th>
+                        <th>Saldo Capital</th>
+                        <th>Capital Amortizado</th>
+                        <th>Interes</th>
+                        <th>Cuotas</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Oi</td>
+                        <td>Oi</td>
+                        <td>Oi</td>
+                        <td>Oi</td>
+                        <td>Oi</td>
+                        <td>Oi</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- <table id="first-data-table">
+                <thead>
+                    <tr>
+                        <th>Titular</th>
+                        <th>Documento de Identidad</th>
+                        <th>Cuenta</th>
+                        <th>Tipo de Tarjeta</th>
+                        <th>Número de tarjeta</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+
+            
+            <table id="second-data-table">
+                <thead>
+                    <tr>
+                        <th>Nº de Simulación</th>
+                        <th>Línea Disponible Rapicash</th>
+                        <th>Monto</th>
+                        <th>Nº de Cuotas</th>
+                        <th>Tasa Efectiva Mensual</th>
+                        <th>Tasa Efectiva Anual</th>
+                        <th>Total de Intereses</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+
+            <table id="third-data-table">
+                <thead>
+                    <tr>
+                        <th>Moneda</th>
+                        <th>Vcto CMR</th>
+                        <th>F. Simulación</th>
+                        <th>Código de Usuário</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table> -->
+
+        </section>
+    </main>
+
+    <div class="modal-overlay">
+        <div class="modal">
+            <div id="form">
+                <h2>Datos del Titular</h2>
+                <form action="" onsubmit="FirstForm.submit(event)">
+                    <div class="input-group">
+                        <label class="sr-only" for="titular">Titular</label>
+                        <input type="text" id="titular" name="titular" placeholder="Nombre del titular" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="identidad">Documento identidad</label>
+                        <input type="number" id="identidad" name="identidad" placeholder="Documento identidad" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="cuenta">Cuenta</label>
+                        <input type="number" id="cuenta" name="cuenta" placeholder="Número de cuenta" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="tipoTarjeta">Tipo de tarjeta</label>
+                        <input type="text" id="tipoTarjeta" name="tipoTarjeta" placeholder="Tipo de tarjeta" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="numeroTarjeta">Número de tarjeta</label>
+                        <input type="number" id="numeroTarjeta" name="numeroTarjeta" placeholder="Número de tarjeta" />
+                    </div>
+
+                    <div class="input-group actions">
+                        <a href="#" class="button cancel" onclick="Modal.closeFirstModal()">Cancelar</a>
+                        <button>Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="second-modal-overlay">
+        <div class="modal">
+            <div id="form">
+                <h2>Datos de Simulación</h2>
+                <form action="" onsubmit="SecondForm.submit(event)">
+                    <div class="input-group">
+                        <label class="sr-only" for="numeroSimulacion">Número de Simulación</label>
+                        <input type="number" id="numeroSimulacion" name="numeroSimulacion"
+                            placeholder="Número de Simulación" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="línea">Línea Disponible Rapicash</label>
+                        <input type="number" id="linea" name="linea" placeholder="Línea Disponible Rapicash" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="monto">Monto</label>
+                        <input type="number" id="monto" name="monto" placeholder="Monto" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="cuotas">Número de Cuotas</label>
+                        <input type="number" id="cuotas" name="cuotas" placeholder="Número de Cuotas" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="tasaMensual">Tasa Efectiva Mensual</label>
+                        <input type="number" id="tasaMensual" name="tasaMensual" placeholder="Tasa Efectiva Mensual" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="tasaAnual">Tasa Efectiva Anual</label>
+                        <input type="number" id="tasaAnual" name="tasaAnual" placeholder="Tasa Efectiva Anual" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="intereses">Total de Intereses</label>
+                        <input type="number" id="intereses" name="intereses" placeholder="Total de Intereses" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="moneda">Moneda</label>
+                        <input type="text" id="moneda" name="moneda" placeholder="Moneda" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="vcto">Vcto CMR</label>
+                        <input type="number" id="vcto" name="vcto" placeholder="Vcto CMR" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="fechaSimulacion">Fecha de Simulación</label>
+                        <input type="date" id="fechaSimulacion" name="fechaSimulacion"
+                            placeholder="Fecha de Simulación" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="sr-only" for="codigoUsuario">Codigo de Usuario</label>
+                        <input type="number" id="codigoUsuario" name="codigoUsuario" placeholder="Codigo de Usuario" />
+                    </div>
+
+                    <div class="input-group actions">
+                        <a href="#" class="button cancel" onclick="Modal.closeSecondModal()">Cancelar</a>
+                        <button>Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <h3 id="footerTitle">Condiciones</h3>
+        
+        <p>
+            Las cuotas mensuales han sido calculadas sobre la base de datos referenciales.					
+            La determinación de la tasa de interés que aplicaría para el préstamo está sujeta a evaluación					
+            crediticia.
+        </p>
+        <p>
+            La cuenta debera contar con Linea Rapicash disponible suficiente, sin mora, no refinanciada ni					
+            bloqueada. Consumos en exceso a la linea de crédito de consumo disminuirán el disponible					
+            del credito efectivo.			
+        </p>		
+        <p>
+            Los consumos efectuados por los clientes por encima de su línea de compras (deducirá la					
+            línea Rapicash), disminuirán  el disponible Rapicash.				
+        </p>		
+        <p>
+            El pago de cuotas está sujeto al ITF (Impuesto de Transacciones Financieras)					
+            Las cuotas son calculadas a 30 días, por lo que si el plazo transcurrido entre la fecha de la					
+            transacción (retiro) y el primer vencimiento es diferente de 30 días, su próximo estado de cuenta					
+            reflejará un ajuste para la primera cuota por dicha diferencia.					
+        </p>	
+        <p>
+            Aplica comisión por RETIRO, el mismo que puedes consultar en nuestro tarifario vigente en					
+            nuestros Centros Financieros y página web www.bancofalabella.pe					
+        </p>
+    </footer>
+
+    <script src="./scripts.js">
+
+    </script>
+
+</body>
+
+</html>
