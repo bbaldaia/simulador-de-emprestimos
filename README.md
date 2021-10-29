@@ -6,6 +6,7 @@ Projeto feito para criar um sistema que realiza um cronograma de pagamento de um
 Alguns novos conceitos que venho aprendendo após iniciar:
 
 - HTML semântico
+- CSS Grid
 - Utilização de API's do navegador
 - Arroz function
 - Laços de repetição com forEach
