@@ -84,7 +84,7 @@
                     <p>0050291738</p>
                     <p>VISA PLATINUM</p>
                     <p>447409******0533</p>
-                    <a class="delete-button"> <img src="./assets/minus.svg" alt="Remover transação"> </a>
+                    <a class="delete-titular"> <img src="./assets/minus.svg" alt="Remover Titular"> </a>
                 </div>
             </div>
 
@@ -105,7 +105,7 @@
                     <p>Código de Usuario:</p>
                 </div>
                 <div id="segundaColunaSimulacion">
-                    <p>53932789</p>
+                    <!-- <p>53932789</p>
                     <p>32.000,00</p>
                     <p>12.000,00</p>
                     <p>12</p>
@@ -116,7 +116,7 @@
                     <p>5</p>
                     <p>28/10/21</p>
                     <p> 500xxx6</p>
-
+                    <a class="delete-simulacion"> <img src="./assets/minus.svg" alt="Remover Simulación"> </a> -->
                 </div>
             </div>
 
@@ -129,7 +129,6 @@
                         <th>Capital Amortizado</th>
                         <th>Interes</th>
                         <th>Cuotas</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -140,7 +139,6 @@
                         <td>Oi</td>
                         <td>Oi</td>
                         <td>Oi</td>
-                        <td></td>
                     </tr>
                 </tbody>
             </table>
@@ -261,13 +259,8 @@
                     </div>
 
                     <div class="input-group">
-                        <label class="sr-only" for="tasaMensual">Tasa Efectiva Mensual</label>
-                        <input type="number" id="tasaMensual" name="tasaMensual" placeholder="Tasa Efectiva Mensual" />
-                    </div>
-
-                    <div class="input-group">
                         <label class="sr-only" for="tasaAnual">Tasa Efectiva Anual</label>
-                        <input type="number" id="tasaAnual" name="tasaAnual" placeholder="Tasa Efectiva Anual" />
+                        <input type="number" id="tasaAnual" name="tasaAnual" placeholder="Tasa Efectiva Anual" step="any" />
                     </div>
 
                     <div class="input-group">

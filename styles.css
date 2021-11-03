@@ -92,7 +92,13 @@ button:hover {
     opacity: 1;
 }
 
-.delete-button {
+.delete-titular {
+    position: absolute;
+    right: 1px;
+    top: -35px;
+}
+
+.delete-simulacion {
     position: absolute;
     right: 1px;
     top: -35px;
@@ -306,6 +312,7 @@ input {
     border: 2px solid black;
     padding: 1.5rem;
     margin: 0rem 6rem 3.5rem;
+    position: relative;
 }
 
 
