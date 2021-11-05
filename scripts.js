@@ -39,7 +39,6 @@ const Transaction = {
 
     remove(index) {
         Transaction.all.splice(index, 1)
-
         App.reload()
     },
 
@@ -86,14 +85,26 @@ const DOM = {
     addTransaction(transaction, index) {
 
         const { datosDelTitularHTML, datosDeSimulacionHTML } = DOM.innerHTMLTransaction(transaction, index)
-        const objectLength = Object.values(transaction).length
 
-        if (objectLength == 5) {
-            DOM.datosDelTitular.innerHTML = datosDelTitularHTML
-        } else if (objectLength == 10) {
-            DOM.datosDeSimulacion.innerHTML = datosDeSimulacionHTML
-            DOM.setWholeTable(transaction)
+        switch (transaction.transactionType) {
+            case 'titular':
+                DOM.addDatosdelTitular(datosDelTitularHTML)
+                break;
+            case 'simulacion':
+                DOM.addDatosdeSimulacion(datosDeSimulacionHTML, transaction)
+                break;
+            default:
+                throw new Error("Invalid transaction!")
         }
+    },
+
+    addDatosdelTitular(datos) {
+        DOM.datosDelTitular.innerHTML = datos
+    },
+
+    addDatosdeSimulacion(datos, transaction) {
+        DOM.datosDeSimulacion.innerHTML = datos
+        DOM.setWholeTable(transaction)
     },
 
     innerHTMLTransaction(transaction, index) {
@@ -157,12 +168,16 @@ const DOM = {
 
     setWholeTable(transaction) {
 
-        DOM.dataTable.appendChild(DOM.setInitialRow(transaction.monto))
+        let { firstTr, formattedMonto } = DOM.setInitialRow(transaction.monto)        
 
-        for (i = 0; i < transaction.cuotas; i++) {
+        DOM.dataTable.appendChild(firstTr)
+        
+        for (var i = 0; i < transaction.cuotas; i++) { 
+                    
             let tr = document.createElement('tr')
-            tr.innerHTML = DOM.setTableRows(i, transaction)
-            DOM.dataTable.appendChild(tr)
+            tr.innerHTML = DOM.returnTableRow(i, transaction, formattedMonto)
+            DOM.dataTable.appendChild(tr)   
+        
         }
     },
 
@@ -170,81 +185,123 @@ const DOM = {
 
         let initialCuota = 0
 
-        let formatMonto = Utils.formatCurrency(monto)
+        let formattedMonto = Utils.formatCurrency(monto)
 
-        let tr = document.createElement('tr')
+        let stringMonto = Utils.formatCurrency(monto).toLocaleString('es-PE', {
+            style: 'currency',
+            currency: 'PEN'
+        })
+
+        let firstTr = document.createElement('tr')
 
         let html =
             `
         <td>${initialCuota}</td>
         <td></td>
-        <td>${formatMonto}</td>
+        <td class="currency">${stringMonto}</td>
         <td></td>
         <td></td>
         <td></td>
         `
 
-        tr.innerHTML = html
+        firstTr.innerHTML = html
 
-        return tr
+        return {
+            firstTr,
+            formattedMonto
+        } 
     },
 
-    setTableRows(index, transaction) {
+    returnTableRow(index, transaction, formattedMonto) {
 
-        let { saldoCapital, interes, cuota, capitalAmortizado } = DOM.setTableData(transaction)
+        let { saldoCapitalArray, interesArray, cuotaArray, capitalAmortizadoArray } = Utils.formatTableDataCurrency(transaction, formattedMonto)
         let cuotaIndex = index + 1
 
         let html =
             `
             <td>${cuotaIndex}</td>
             <td></td>
-            <td>${saldoCapital[index]}</td>
-            <td>${capitalAmortizado[index]}</td>
-            <td>${interes[index]}</td>
-            <td>${cuota[index]}</td>
-        `
+            <td class="currency">${saldoCapitalArray[index]}</td>
+            <td class="currency">${capitalAmortizadoArray[index]}</td>
+            <td class="currency">${interesArray[index]}</td>
+            <td class="currency">${cuotaArray[index]}</td>
+            `
 
         return html
     },
 
-    setTableData(transaction) {
+    setAllTableRowsData(transaction, formattedMonto) {
+        
+        let { saldoCapitalArray, interesArray, cuotaArray, capitalAmortizadoArray, tasaMensual } = DOM.setBaseTableRowData(transaction, formattedMonto)
+        
+        for (var i = 1; i < transaction.cuotas; i++) {
+            interesArray[i] = saldoCapitalArray[saldoCapitalArray.length - 1] * tasaMensual
+            cuotaArray[i] = cuotaArray[cuotaArray.length - 1]
+            capitalAmortizadoArray[i] = cuotaArray[i] - interesArray[i]
+            saldoCapitalArray[i] = saldoCapitalArray[saldoCapitalArray.length - 1] - capitalAmortizadoArray[i]
+        }
 
+        return {
+            saldoCapitalArray,
+            interesArray,
+            cuotaArray,
+            capitalAmortizadoArray
+        }
+    },
+
+    reducingFloatNumbers(transaction, formattedMonto) {
+        let { saldoCapitalArray, interesArray, cuotaArray, capitalAmortizadoArray } = DOM.setAllTableRowsData(transaction, formattedMonto)
+
+        for (var i = 0; i < transaction.cuotas; i++) {
+            saldoCapitalArray[i] = saldoCapitalArray[i].toFixed(2)
+            interesArray[i] = interesArray[i].toFixed(2)
+            cuotaArray[i] = cuotaArray[i].toFixed(2)
+            capitalAmortizadoArray[i] = capitalAmortizadoArray[i].toFixed(2)
+        }
+
+        return {
+            saldoCapitalArray,
+            interesArray,
+            cuotaArray,
+            capitalAmortizadoArray
+        }
+    },
+
+    setBaseTableRowData(transaction, formattedMonto) {
+        
+        let saldoCapitalArray = []
+        let interesArray = []
+        let cuotaArray = []
+        let capitalAmortizadoArray = []
+        
         let tasaMensual = Utils.formatTasaMensual(transaction.tasaAnual, transaction.cuotas)
 
         tasaMensual = tasaMensual / 100
 
         tasaMensual = tasaMensual.toFixed(9)
 
-        let saldoCapital = []
-        let interes = []
-        let cuota = []
-        let capitalAmortizado = []
+        let baseSaldoCapitalValue = formattedMonto
 
+        let baseInteresValue = baseSaldoCapitalValue * tasaMensual
 
-        let saldoCapital = transaction.monto / 100
+        let baseCuotaValue = Utils.formatCuotas(transaction, tasaMensual)
 
-        let interes = saldoCapital * tasaMensual
+        let baseCapitalAmortizadoValue = baseCuotaValue - baseInteresValue
 
-        let cuota = Utils.formatCuotas(transaction, tasaMensual)
+        baseSaldoCapitalValue = baseSaldoCapitalValue - baseCapitalAmortizadoValue
 
-        let capitalAmortizado = cuota - interes
-
-        saldoCapital = saldoCapital - capitalAmortizado
-
-        saldoCapital = saldoCapital.toFixed(2)
-        interes = interes.toFixed(2)
-        cuota = cuota.toFixed(2)
-        capitalAmortizado = capitalAmortizado.toFixed(2)
-
-
+        saldoCapitalArray.push(baseSaldoCapitalValue)
+        interesArray.push(baseInteresValue)
+        cuotaArray.push(baseCuotaValue)
+        capitalAmortizadoArray.push(baseCapitalAmortizadoValue)
 
         return {
-            saldoCapital,
-            interes,
-            cuota,
-            capitalAmortizado
+            saldoCapitalArray,
+            interesArray,
+            cuotaArray,
+            capitalAmortizadoArray,
+            tasaMensual
         }
-
     },
 
     updateBalance() {
@@ -278,14 +335,45 @@ const Utils = {
     },
 
     formatCurrency(value) {
-        // const signal = Number(value) < 0 ? "-" : ""
-        // value = String(value).replace(/\D/g, "")
+
         value = Number(value) / 100
-        value = value.toLocaleString("es-PE", {
-            style: "currency",
-            currency: "PEN"
-        })
+
         return value
+    },
+
+    formatTableDataCurrency(transaction, formattedMonto) {
+        let { saldoCapitalArray, interesArray, cuotaArray, capitalAmortizadoArray } = DOM.reducingFloatNumbers(transaction, formattedMonto)
+
+        console.log(saldoCapitalArray, interesArray, cuotaArray, capitalAmortizadoArray)
+
+        for (var i = 0; i < transaction.cuotas; i++) {
+            saldoCapitalArray[i] = Number(saldoCapitalArray[i]).toLocaleString('es-PE', { 
+                style: 'currency', 
+                currency: 'PEN' 
+            })
+
+            interesArray[i] = Number(interesArray[i]).toLocaleString('es-PE', { 
+                style: 'currency', 
+                currency: 'PEN' 
+            })
+
+            cuotaArray[i] = Number(cuotaArray[i]).toLocaleString('es-PE', { 
+                style: 'currency', 
+                currency: 'PEN' 
+            })
+
+            capitalAmortizadoArray[i] = Number(capitalAmortizadoArray[i]).toLocaleString('es-PE', { 
+                style: 'currency', 
+                currency: 'PEN' 
+            })
+        }    
+
+        return {
+            saldoCapitalArray,
+            interesArray,
+            cuotaArray,
+            capitalAmortizadoArray
+        }
     },
 
     formatTasaMensual(tasaAnual, cuota) {
@@ -342,6 +430,7 @@ const FirstForm = {
     },
 
     validateFields() {
+        const transactionType = 'titular'
         const { titular, identidad, cuenta, tipoTarjeta, numeroTarjeta } = FirstForm.getValues()
 
         //trim = tira espaços vazios de uma string
@@ -358,28 +447,11 @@ const FirstForm = {
                 identidad,
                 cuenta,
                 tipoTarjeta,
-                numeroTarjeta
+                numeroTarjeta,
+                transactionType
             }
         }
     },
-
-    // formatValues() {
-    //     let { titular, identidad, cuenta, tipoTarjeta, numeroTarjeta } = FirstForm.getValues()
-
-    //     titular = Utils.formatAmount(titular)
-    //     identidad = Utils.formatAmount(identidad)
-    //     cuenta = Utils.formatAmount(cuenta)
-    //     tipoTarjeta = Utils.formatAmount(tipoTarjeta)
-    //     numeroTarjeta = Utils.formatAmount(numeroTarjeta)
-
-    //     return {
-    //         titular,
-    //         identidad,
-    //         cuenta,
-    //         tipoTarjeta,
-    //         numeroTarjeta
-    //     }
-    // },
 
     clearFields() {
         FirstForm.titular.value = ""
@@ -433,6 +505,7 @@ const SecondForm = {
     validateFields() {
         const { numeroSimulacion, linea, monto, cuotas, tasaAnual, intereses, moneda, vcto, fechaSimulacion, codigoUsuario } = SecondForm.getValues()
 
+
         //possível melhoria
         if (numeroSimulacion.trim() === "" ||
             linea.trim() === "" ||
@@ -462,6 +535,8 @@ const SecondForm = {
     },
 
     formatValues() {
+        const transactionType = 'simulacion'
+
         let { numeroSimulacion, linea, monto, cuotas,
             tasaAnual, intereses, moneda, vcto,
             fechaSimulacion, codigoUsuario } = SecondForm.getValues()
@@ -482,13 +557,13 @@ const SecondForm = {
             moneda,
             vcto,
             fechaSimulacion,
-            codigoUsuario
+            codigoUsuario,
+            transactionType
         }
     },
 
     submit(event) {
         event.preventDefault()
-
         try {
             SecondForm.validateFields()
             const transaction = SecondForm.formatValues()

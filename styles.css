@@ -202,16 +202,8 @@ table tbody tr:hover {
     opacity: 1;
 }
 
-td.descripton {
-    color: var(--dark-blue);
-}
-
-td.income {
+td.currency {
     color: #12a454;
-}
-
-td.expense {
-    color: #e92929;
 }
 
 /* Modal ========================= */
