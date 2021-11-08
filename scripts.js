@@ -79,11 +79,24 @@ const DOM = {
 
     innerHTMLTransaction(transaction, index) {
 
-        const linea = Utils.formatCurrency(transaction.linea)
-        const monto = Utils.formatCurrency(transaction.monto)
+        let linea = Utils.formatCurrency(transaction.linea)
+
+        linea = linea.toLocaleString('es-PE', {
+            style: 'currency',
+            currency: 'PEN'
+        })
+
+        let monto = Utils.formatCurrency(transaction.monto)        
+        
         let { totalInteresValue } = Utils.formatCardDataCurrency(transaction, monto)
-        const tasaMensual = Utils.formatTasaMensual(transaction.tasaAnual, transaction.cuotas)
+        let tasaMensual = Utils.formatTasaMensual(transaction.tasaAnual, transaction.cuotas)
+        tasaMensual = tasaMensual.toFixed(2)
         const tasaAnual = transaction.tasaAnual / 100
+
+        monto = monto.toLocaleString('es-PE', {
+            style: 'currency',
+            currency: 'PEN'
+        })
 
         let datosDelTitularHTML =
             `
@@ -115,18 +128,6 @@ const DOM = {
                     <img onclick="Transaction.remove(${index})" src="./assets/minus.svg" alt="Remover Simulación">
                 </a>
                 `
-
-        // let dataTableHTML = 
-        //     `
-        //     <td class="moneda">${transaction.moneda}</td>     
-        //     <td class="vcto">${transaction.vcto}</td>  
-        //     <td class="fechaSimulacion">${transaction.fechaSimulacion}</td>  
-        //     <td class="codigoUsuario">${transaction.codigoUsuario}</td> 
-        //     <td>
-        //     <img onclick="Transaction.remove(${index})" src="./assets/minus.svg" alt="Remover transação">
-        //     </td>
-
-        //     `
 
         return {
             datosDelTitularHTML,
@@ -236,6 +237,8 @@ const DOM = {
             totalCapitalAmortizadoValue = totalCapitalAmortizadoValue + capitalAmortizadoArray[i]            
         }
 
+        totalCapitalAmortizadoValue = Math.round(totalCapitalAmortizadoValue)
+
         totalInteresValue = Number(totalInteresValue.toFixed(2))
         totalCuotaValue = Number(totalCuotaValue.toFixed(2))
         totalCapitalAmortizadoValue = Number(totalCapitalAmortizadoValue.toFixed(2))
@@ -261,8 +264,8 @@ const DOM = {
         let tasaMensual = Utils.formatTasaMensual(transaction.tasaAnual, transaction.cuotas)
 
         tasaMensual = tasaMensual / 100
-
-        tasaMensual = tasaMensual.toFixed(9)
+        
+        tasaMensual = Number(tasaMensual.toFixed(9))
 
         let baseSaldoCapitalValue = formattedMonto
 
@@ -381,17 +384,21 @@ const Utils = {
     },
 
     formatTasaMensual(tasaAnual, cuota) {
-
+        
         let firstValue = tasaAnual / 100
         firstValue = firstValue + 100
         firstValue = firstValue / 100
-
-        let secondValue = 1 / cuota
-
+        
+        let secondValue = 1 / 12
+        secondValue = Number(secondValue.toFixed(9))
+        
+        
         let finalValue = Math.pow(firstValue, secondValue)
+        finalValue = Number(finalValue.toFixed(9))
         finalValue = finalValue - 1
+        finalValue = Number(finalValue.toFixed(9))
+        //possível causa do problema: número é arredondado e não é o esperado
         finalValue = finalValue * 100
-        finalValue = finalValue.toFixed(2)
 
         return finalValue
     },
@@ -465,11 +472,28 @@ const FirstForm = {
         FirstForm.numeroTarjeta.value = ""
     },
 
+    formattedValues() {
+        let { titular, identidad, cuenta, tipoTarjeta, numeroTarjeta, transactionType } = FirstForm.validateFields()        
+        let tarjetaArray = numeroTarjeta.split("")
+
+        numeroTarjeta = `${tarjetaArray[0]}${tarjetaArray[1]}${tarjetaArray[2]}${tarjetaArray[3]}${tarjetaArray[4]}${tarjetaArray[5]}******${tarjetaArray[12]}${tarjetaArray[13]}${tarjetaArray[14]}${tarjetaArray[15]}`
+
+        return {
+            titular,
+            identidad,
+            cuenta,
+            tipoTarjeta,
+            numeroTarjeta,
+            transactionType
+        }
+    },
+
     submit(event) {
         event.preventDefault()
 
         try {
-            const transaction = FirstForm.validateFields()
+            FirstForm.formattedValues()
+            const transaction = FirstForm.formattedValues()
             Transaction.add(transaction)
             FirstForm.clearFields()
             Modal.closeFirstModal() 
@@ -541,10 +565,13 @@ const SecondForm = {
             tasaAnual, moneda, vcto,
             fechaSimulacion, codigoUsuario } = SecondForm.getValues()
 
+        let codigoUsuarioArray = codigoUsuario.split("")
+
         linea = Utils.formatAmount(linea)
         monto = Utils.formatAmount(monto)
         tasaAnual = Utils.formatAmount(tasaAnual)
         fechaSimulacion = Utils.formatDate(fechaSimulacion)
+        codigoUsuario = `${codigoUsuarioArray[0]}${codigoUsuarioArray[1]}${codigoUsuarioArray[2]}xxx${codigoUsuarioArray[6]}`
 
         return {
             numeroSimulacion,
@@ -560,12 +587,26 @@ const SecondForm = {
         }
     },
 
+    clearFields() {
+        SecondForm.numeroSimulacion.value = ""
+        SecondForm.linea.value = ""
+        SecondForm.monto.value = ""
+        SecondForm.cuotas.value = ""
+        SecondForm.tasaAnual.value = ""
+        SecondForm.moneda.value = ""
+        SecondForm.vcto.value = ""
+        SecondForm.fechaSimulacion.value = ""
+        SecondForm.codigoUsuario.value = ""
+    },
+
     submit(event) {
         event.preventDefault()
         try {
+            localStorage.clear()
             SecondForm.validateFields()
             const transaction = SecondForm.formatValues()
             Transaction.add(transaction)
+            SecondForm.clearFields()
             Modal.closeSecondModal()
 
         } catch (error) {
@@ -578,7 +619,7 @@ const App = {
     init() {
         Transaction.all.forEach(DOM.addTransaction)
 
-        Storage.set(Transaction.all)
+        // Storage.set(Transaction.all)
     },
 
     reload() {
@@ -586,5 +627,7 @@ const App = {
         App.init()
     },
 }
+
+
 
 // App.init()
