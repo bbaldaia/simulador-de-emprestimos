@@ -39,41 +39,11 @@ const Transaction = {
 
     remove(index) {
         Transaction.all.splice(index, 1)
+        document.querySelector('#capitalAmortizadoCard').innerHTML = 'S/ 0,00'
+        document.querySelector('#interesCard').innerHTML = 'S/ 0,00'
+        document.querySelector('#cuotasCard').innerHTML = 'S/ 0,00'
         App.reload()
     },
-
-    incomes() {
-        let income = 0
-        //pegar todas as transacoes 
-        //para cada transacao,
-        Transaction.all.forEach(transaction => {
-            //se ela for maior que zero 
-            if (transaction.amount > 0) {
-                //somar a uma variavel e retornar a variavel 
-                income += transaction.amount
-            }
-        })
-        return income
-    },
-
-    expenses() {
-        let expense = 0
-        //pegar todas as transacoes 
-        //para cada transacao,
-        Transaction.all.forEach(transaction => {
-            //se ela for menor que zero
-            if (transaction.amount < 0) {
-                //somar a uma variavel e retornar a variavel
-                expense += transaction.amount
-            }
-        })
-        return expense
-    },
-
-    total() {
-        return Transaction.incomes() + Transaction.expenses()
-    },
-
 }
 
 const DOM = {
@@ -111,6 +81,7 @@ const DOM = {
 
         const linea = Utils.formatCurrency(transaction.linea)
         const monto = Utils.formatCurrency(transaction.monto)
+        let { totalInteresValue } = Utils.formatCardDataCurrency(transaction, monto)
         const tasaMensual = Utils.formatTasaMensual(transaction.tasaAnual, transaction.cuotas)
         const tasaAnual = transaction.tasaAnual / 100
 
@@ -135,7 +106,7 @@ const DOM = {
                 <p>${transaction.cuotas}</p>
                 <p>${tasaMensual} %</p>
                 <p>${tasaAnual} %</p>
-                <p>${transaction.intereses}</p>
+                <p>${totalInteresValue}</p>
                 <p>${transaction.moneda}</p>
                 <p>${transaction.vcto}</p>
                 <p>${transaction.fechaSimulacion}</p>
@@ -161,14 +132,11 @@ const DOM = {
             datosDelTitularHTML,
             datosDeSimulacionHTML
         }
-
-        // const CSSclass = transaction.amount > 0 ? "income" : "expense"
-        // // const amount = Utils.formatCurrency(transaction.amount)
     },
 
     setWholeTable(transaction) {
 
-        let { firstTr, formattedMonto } = DOM.setInitialRow(transaction.monto)        
+        let { firstTr, formattedMonto } = DOM.setInitialRow(transaction.monto)  
 
         DOM.dataTable.appendChild(firstTr)
         
@@ -176,9 +144,11 @@ const DOM = {
                     
             let tr = document.createElement('tr')
             tr.innerHTML = DOM.returnTableRow(i, transaction, formattedMonto)
-            DOM.dataTable.appendChild(tr)   
-        
+            DOM.dataTable.appendChild(tr)          
         }
+
+        DOM.setCardData(transaction, formattedMonto)
+
     },
 
     setInitialRow(monto) {
@@ -251,19 +221,33 @@ const DOM = {
 
     reducingFloatNumbers(transaction, formattedMonto) {
         let { saldoCapitalArray, interesArray, cuotaArray, capitalAmortizadoArray } = DOM.setAllTableRowsData(transaction, formattedMonto)
+        let totalInteresValue = 0
+        let totalCuotaValue = 0
+        let totalCapitalAmortizadoValue = 0
 
         for (var i = 0; i < transaction.cuotas; i++) {
-            saldoCapitalArray[i] = saldoCapitalArray[i].toFixed(2)
-            interesArray[i] = interesArray[i].toFixed(2)
-            cuotaArray[i] = cuotaArray[i].toFixed(2)
-            capitalAmortizadoArray[i] = capitalAmortizadoArray[i].toFixed(2)
+            saldoCapitalArray[i] = Number(saldoCapitalArray[i].toFixed(2))
+            interesArray[i] = Number(interesArray[i].toFixed(2))
+            cuotaArray[i] = Number(cuotaArray[i].toFixed(2))
+            capitalAmortizadoArray[i] = Number(capitalAmortizadoArray[i].toFixed(2))
+
+            totalInteresValue = totalInteresValue + interesArray[i]
+            totalCuotaValue = totalCuotaValue + cuotaArray[i]
+            totalCapitalAmortizadoValue = totalCapitalAmortizadoValue + capitalAmortizadoArray[i]            
         }
+
+        totalInteresValue = Number(totalInteresValue.toFixed(2))
+        totalCuotaValue = Number(totalCuotaValue.toFixed(2))
+        totalCapitalAmortizadoValue = Number(totalCapitalAmortizadoValue.toFixed(2))
 
         return {
             saldoCapitalArray,
             interesArray,
             cuotaArray,
-            capitalAmortizadoArray
+            capitalAmortizadoArray,
+            totalInteresValue,
+            totalCuotaValue,
+            totalCapitalAmortizadoValue
         }
     },
 
@@ -304,16 +288,13 @@ const DOM = {
         }
     },
 
-    updateBalance() {
-        document
-            .getElementById('incomeDisplay')
-            .innerHTML = Utils.formatCurrency(Transaction.incomes())
-        document
-            .getElementById('expenseDisplay')
-            .innerHTML = Utils.formatCurrency(Transaction.expenses())
-        document
-            .getElementById('totalDisplay')
-            .innerHTML = Utils.formatCurrency(Transaction.total())
+    setCardData(transaction, formattedMonto) {
+        let { totalCapitalAmortizadoValue, totalInteresValue, totalCuotaValue } = Utils.formatCardDataCurrency(transaction, formattedMonto)
+
+        document.querySelector('#capitalAmortizadoCard').innerHTML = totalCapitalAmortizadoValue
+        document.querySelector('#interesCard').innerHTML = totalInteresValue
+        document.querySelector('#cuotasCard').innerHTML = totalCuotaValue
+
     },
 
     clearTransactions() {
@@ -344,8 +325,6 @@ const Utils = {
     formatTableDataCurrency(transaction, formattedMonto) {
         let { saldoCapitalArray, interesArray, cuotaArray, capitalAmortizadoArray } = DOM.reducingFloatNumbers(transaction, formattedMonto)
 
-        console.log(saldoCapitalArray, interesArray, cuotaArray, capitalAmortizadoArray)
-
         for (var i = 0; i < transaction.cuotas; i++) {
             saldoCapitalArray[i] = Number(saldoCapitalArray[i]).toLocaleString('es-PE', { 
                 style: 'currency', 
@@ -373,6 +352,31 @@ const Utils = {
             interesArray,
             cuotaArray,
             capitalAmortizadoArray
+        }
+    },
+
+    formatCardDataCurrency(transaction, formattedMonto) {
+        let { totalInteresValue, totalCuotaValue, totalCapitalAmortizadoValue } = DOM.reducingFloatNumbers(transaction, formattedMonto)
+
+        totalInteresValue = totalInteresValue.toLocaleString('es-PE', { 
+            style: 'currency', 
+            currency: 'PEN' 
+        })
+
+        totalCuotaValue = totalCuotaValue.toLocaleString('es-PE', { 
+            style: 'currency', 
+            currency: 'PEN' 
+        })
+
+        totalCapitalAmortizadoValue = totalCapitalAmortizadoValue.toLocaleString('es-PE', { 
+            style: 'currency', 
+            currency: 'PEN' 
+        })
+
+        return {
+            totalInteresValue,
+            totalCuotaValue,
+            totalCapitalAmortizadoValue       
         }
     },
 
@@ -408,7 +412,7 @@ const Utils = {
         finalValue = finalValue * monto
 
         return finalValue
-    }
+    },
 }
 
 const FirstForm = {
@@ -457,8 +461,8 @@ const FirstForm = {
         FirstForm.titular.value = ""
         FirstForm.identidad.value = ""
         FirstForm.cuenta.value = ""
-        FirstForm.tipoTarjeta = ""
-        FirstForm.numeroTarjeta = ""
+        FirstForm.tipoTarjeta.value = ""
+        FirstForm.numeroTarjeta.value = ""
     },
 
     submit(event) {
@@ -467,8 +471,8 @@ const FirstForm = {
         try {
             const transaction = FirstForm.validateFields()
             Transaction.add(transaction)
-            // FirstForm.clearFields()
-            // Modal.closeFirstModal() 
+            FirstForm.clearFields()
+            Modal.closeFirstModal() 
         } catch (error) {
             alert(error.message)
         }
@@ -481,7 +485,6 @@ const SecondForm = {
     monto: document.querySelector('#monto'),
     cuotas: document.querySelector('#cuotas'),
     tasaAnual: document.querySelector('#tasaAnual'),
-    intereses: document.querySelector('#intereses'),
     moneda: document.querySelector('#moneda'),
     vcto: document.querySelector('#vcto'),
     fechaSimulacion: document.querySelector('#fechaSimulacion'),
@@ -494,7 +497,6 @@ const SecondForm = {
             monto: SecondForm.monto.value,
             cuotas: SecondForm.cuotas.value,
             tasaAnual: SecondForm.tasaAnual.value,
-            intereses: SecondForm.intereses.value,
             moneda: SecondForm.moneda.value,
             vcto: SecondForm.vcto.value,
             fechaSimulacion: SecondForm.fechaSimulacion.value,
@@ -503,7 +505,7 @@ const SecondForm = {
     },
 
     validateFields() {
-        const { numeroSimulacion, linea, monto, cuotas, tasaAnual, intereses, moneda, vcto, fechaSimulacion, codigoUsuario } = SecondForm.getValues()
+        const { numeroSimulacion, linea, monto, cuotas, tasaAnual, moneda, vcto, fechaSimulacion, codigoUsuario } = SecondForm.getValues()
 
 
         //possível melhoria
@@ -512,7 +514,6 @@ const SecondForm = {
             monto.trim() === "" ||
             cuotas.trim() === "" ||
             tasaAnual.trim() === "" ||
-            intereses.trim() === "" ||
             moneda.trim() === "" ||
             vcto.trim() === "" ||
             fechaSimulacion.trim() === "" ||
@@ -525,7 +526,6 @@ const SecondForm = {
                 monto,
                 cuotas,
                 tasaAnual,
-                intereses,
                 moneda,
                 vcto,
                 fechaSimulacion,
@@ -538,13 +538,12 @@ const SecondForm = {
         const transactionType = 'simulacion'
 
         let { numeroSimulacion, linea, monto, cuotas,
-            tasaAnual, intereses, moneda, vcto,
+            tasaAnual, moneda, vcto,
             fechaSimulacion, codigoUsuario } = SecondForm.getValues()
 
         linea = Utils.formatAmount(linea)
         monto = Utils.formatAmount(monto)
         tasaAnual = Utils.formatAmount(tasaAnual)
-        intereses = Utils.formatAmount(intereses)
         fechaSimulacion = Utils.formatDate(fechaSimulacion)
 
         return {
@@ -553,7 +552,6 @@ const SecondForm = {
             monto,
             cuotas,
             tasaAnual,
-            intereses,
             moneda,
             vcto,
             fechaSimulacion,
@@ -568,6 +566,7 @@ const SecondForm = {
             SecondForm.validateFields()
             const transaction = SecondForm.formatValues()
             Transaction.add(transaction)
+            Modal.closeSecondModal()
 
         } catch (error) {
             alert(error.message)
@@ -579,9 +578,7 @@ const App = {
     init() {
         Transaction.all.forEach(DOM.addTransaction)
 
-        DOM.updateBalance()
-
-        // Storage.set(Transaction.all)
+        Storage.set(Transaction.all)
     },
 
     reload() {
