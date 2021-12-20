@@ -11,7 +11,7 @@ Os principais aprendizados desenvolvendo esse projeto foram:
 - CSS Grid
 - Design Responsivo
 - Utilização de API's do navegador
-- Arroz function
+- Arrow Function
 - Laços de repetição com forEach
 - Destructuring
 - Try catch
